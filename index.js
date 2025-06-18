@@ -6,6 +6,16 @@ http.createServer((req,res)=>{
     let products = JSON.parse(fs.readFileSync('./products.json','utf-8'))
     let URL = url.parse(req.url,true)
     const Query = URL.query;
+
+    res.setHeaders("Access-Control-Allow-Origin", "*");
+    res.setHeaders("Access-Control-Allow-Headers", "*");
+    res.setHeaders("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+
+    if(req.method=="OPTIONS"){
+        res.end();
+    }
+
+
     
     if(req.method=='GET' && URL.pathname==='/products'){
         if(Query.id==undefined && Query.title==undefined && Query.brand==undefined && Query.category==undefined){
@@ -47,6 +57,47 @@ http.createServer((req,res)=>{
             }else{
                 res.end(JSON.stringify({'message':'Product Category is Undefined'}))
             }
+        }else if(req.method=="POST",URL.pathname==='/products'){
+            let product = '';
+            req.on('data',(chunck)=>{
+                product+=chunck;
+            })
+            req.on('end',()=>{
+                let newProduct=JSON.parse(product);
+                products.push(newProduct);
+                fs.writeFile('/products.json',JSON.stringify(products),(err)=>{
+                    if(err){
+                        res.end(JSON.stringify({"message":"Error saving product"}));
+                    }else{
+                        res.end(JSON.stringify({"message":"Product added successfully"}));
+
+                    }
+                })
+            })
+        }else if(req.method=='PUT' && URL.pathname==="/products"){
+            let product ='';
+            req.on('data',(chunck)=>{
+                product+=chunck;
+            })
+            req.on('end',()=>{
+                let updatedProduct =JSON.parse(product)
+                let index = products.findIndex((product)=>{
+                    return Query.id==product.id;
+                })
+                if(index!=-1){
+                    products[index]=updatedProduct;
+                    fs.writeFile('products.json',JSON.stringify(products),(err)=>{
+                        if(err){
+                            res.end(JSON.stringify({"message":"cannot Update Item"}));
+                        }else{
+                            res.end(JSON.stringify({"message":"Item successfully Updated"}));
+                        }
+                    })
+                }else{
+                    res.end(JSON.stringify({"message":"Product ID is Invalid"}))
+                }
+                
+            })
         }
     } 
         
