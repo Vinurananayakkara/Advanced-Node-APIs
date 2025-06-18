@@ -14,8 +14,6 @@ http.createServer((req,res)=>{
     if(req.method=="OPTIONS"){
         res.end();
     }
-
-
     
     if(req.method=='GET' && URL.pathname==='/products'){
         if(Query.id==undefined && Query.title==undefined && Query.brand==undefined && Query.category==undefined){
@@ -90,6 +88,7 @@ http.createServer((req,res)=>{
                         if(err){
                             res.end(JSON.stringify({"message":"cannot Update Item"}));
                         }else{
+                            console.log(updatedProduct);
                             res.end(JSON.stringify({"message":"Item successfully Updated"}));
                         }
                     })
@@ -98,6 +97,25 @@ http.createServer((req,res)=>{
                 }
                 
             })
+        }else if(req.method=="DELETE",URL.pathname==='/products'){
+            let index=products.findIndex((product)=>{
+                return Query.id==product.id;
+            })
+
+            if (index!=-1){
+                let deletedProduct = products.splice(index,1);
+                fs.writeFile('products.json',JSON.stringify(products),(err)=>{
+                        if(err){
+                            res.end(JSON.stringify({"message":"cannot Delete Item"}));
+                        }else{
+                            console.log(deletedProduct);
+                            res.end(JSON.stringify({"message":"Item successfully Deleted"}));
+                        }
+                    })
+            }else{
+                res.end(JSON.stringify({"message":"Product ID is Invalid"}))
+            }
+            
         }
     } 
         
