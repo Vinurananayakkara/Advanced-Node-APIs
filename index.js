@@ -7,9 +7,9 @@ http.createServer((req,res)=>{
     let URL = url.parse(req.url,true)
     const Query = URL.query;
 
-    res.setHeaders("Access-Control-Allow-Origin", "*");
-    res.setHeaders("Access-Control-Allow-Headers", "*");
-    res.setHeaders("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Headers", "*");
+    res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
 
     if(req.method=="OPTIONS"){
         res.end();
@@ -28,16 +28,17 @@ http.createServer((req,res)=>{
             }else{
                 res.end(JSON.stringify({'message':'Product ID is Undefined'}))
             }
-        }let matchedProducts = products.filter((product) => {
-            return product.title == Query.title;
-        });
+        }else if(Query.id==undefined && Query.title!=undefined && Query.brand==undefined && Query.category==undefined){
+            let matchedProducts = products.filter((product) => {
+                return product.title == Query.title;
+            });
 
-        if (matchedProducts.length > 0) {
-            res.end(JSON.stringify(matchedProducts));
-        } else {
-            res.end(JSON.stringify({ message: 'No products found with that title' }));
-        }
-    
+            if (matchedProducts.length > 0) {
+                res.end(JSON.stringify(matchedProducts));
+            } else {
+                res.end(JSON.stringify({ message: 'No products found with that title' }));
+            }
+            return;
         }else if (Query.id==undefined && Query.title==undefined && Query.brand!=undefined && Query.category==undefined){
             let matchedProducts = products.filter((product)=>{
                 return product.brand==Query.brand;
@@ -47,6 +48,7 @@ http.createServer((req,res)=>{
             }else{
                 res.end(JSON.stringify({'message':'Product Brand is Undefined'}))
             }
+            return;
         }else if (Query.id==undefined && Query.title==undefined && Query.brand==undefined && Query.category!=undefined){
             let matchedProducts = products.filter((product)=>{
                 return product.category==Query.category;
@@ -56,6 +58,7 @@ http.createServer((req,res)=>{
             }else{
                 res.end(JSON.stringify({'message':'Product Category is Undefined'}))
             }
+            return;
         }else if (Query.id==undefined && Query.title!=undefined && Query.brand!=undefined && Query.category==undefined){
             let matchedProducts = products.filter((product)=>{
                 return product.title==Query.title && product.brand==Query.brand;
@@ -78,6 +81,7 @@ http.createServer((req,res)=>{
                 }
                
             }
+            return;
         }else if (Query.id==undefined && Query.title!=undefined && Query.brand==undefined && Query.category!=undefined){
             let matchedProducts = products.filter((product)=>{
                 return product.category==Query.category && product.title==Query.title;
@@ -100,6 +104,7 @@ http.createServer((req,res)=>{
                 }
                 
             }
+            return;
         }else if (Query.id==undefined && Query.title==undefined && Query.brand!=undefined && Query.category!=undefined){
             let matchedProducts = products.filter((product)=>{
                 return product.category==Query.category && product.brand==Query.brand;
@@ -109,6 +114,7 @@ http.createServer((req,res)=>{
             }else{
                 res.end(JSON.stringify({'message':'Product Category or Brand Undefined'}))
             }
+            return;
         }else if (Query.id==undefined && Query.title!=undefined && Query.brand!=undefined && Query.category!=undefined){
             let matchedProducts = products.filter((product)=>{
                 return product.category==Query.category && product.brand==Query.brand && product.title==Query.title;
@@ -116,12 +122,39 @@ http.createServer((req,res)=>{
             if (matchedProducts.length > 0){
                 res.end(JSON.stringify(matchedProducts))
             }else{
-                res.end(JSON.stringify({'message':'Product Title or Brand or Category Undefined'}))
+
+                let anyBrand = products.find(product=>{
+                    return product.brand == Query.brand
+                })
+                let anyTitle = products.find(product=>{
+                    return product.title == Query.title
+                })
+                let anyCategory = products.find(product=>{
+                    return product.category == Query.category
+                })
+
+                if(anyTitle == undefined && anyBrand != undefined && anyCategory !=undefined){
+                    res.end(JSON.stringify({'message':'Product Title is mismatched or undefined'}))
+                }else if (anyTitle != undefined && anyBrand == undefined && anyCategory !=undefined){
+                    res.end(JSON.stringify({'message':'Product Brand is mismatched or undefined'}))
+                }else if (anyTitle != undefined && anyBrand != undefined && anyCategory ==undefined){
+                    res.end(JSON.stringify({'message':'Product Category is mismatched or undefined'}))
+                }else if(anyTitle == undefined && anyBrand == undefined && anyCategory !=undefined){
+                    res.end(JSON.stringify({'message':'Product Title & Product Brand is mismatched or undefined'}))
+                }else if(anyTitle == undefined && anyBrand != undefined && anyCategory ==undefined){
+                    res.end(JSON.stringify({'message':'Product Title & Product Category is mismatched or undefined'}))
+                }else if(anyTitle != undefined && anyBrand == undefined && anyCategory ==undefined){
+                    res.end(JSON.stringify({'message':'Product Category & Product Brand is mismatched or undefined'}))
+                }else{
+                    res.end(JSON.stringify({'message':'Product Title , Product Brand & Product Category is mismatched or undefined'}))
+                }
+                
             }
-        }else if(req.method=="POST"&& URL.pathname==='/products'){
+            return;
+        }else if(req.method=="POST" && URL.pathname==='/products'){
             let product = '';
-            req.on('data',(chunck)=>{
-                product+=chunck;
+            req.on('data',(chunk)=>{
+                product+=chunk;
             })
             req.on('end',()=>{
                 let newProduct=JSON.parse(product);
@@ -135,10 +168,11 @@ http.createServer((req,res)=>{
                     }
                 })
             })
+            return;
         }else if(req.method=='PUT' && URL.pathname==="/products"){
             let product ='';
-            req.on('data',(chunck)=>{
-                product+=chunck;
+            req.on('data',(chunk)=>{
+                product+=chunk;
             })
             req.on('end',()=>{
                 let updatedProduct =JSON.parse(product)
@@ -160,6 +194,7 @@ http.createServer((req,res)=>{
                 }
                 
             })
+            return;
         }else if(req.method=="DELETE" && URL.pathname==='/products'){
             let index=products.findIndex((product)=>{
                 return Query.id==product.id;
@@ -178,8 +213,12 @@ http.createServer((req,res)=>{
             }else{
                 res.end(JSON.stringify({"message":"Product ID is Invalid"}))
             }
-            
+            return;
+        }else{
+            res.statusCode = 404;
+            res.end(JSON.stringify({ message: "Invalid request" }));
         }
+    }
     
         
     //
