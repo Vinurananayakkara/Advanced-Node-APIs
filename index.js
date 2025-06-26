@@ -28,32 +28,95 @@ http.createServer((req,res)=>{
             }else{
                 res.end(JSON.stringify({'message':'Product ID is Undefined'}))
             }
-        }else if (Query.id==undefined && Query.title!=undefined && Query.brand==undefined && Query.category==undefined){
-            let product = products.find((product)=>{
-                return product.title==Query.title;
-            })
-            if (product!==undefined){
-                res.end(JSON.stringify(product))
-            }else{
-                res.end(JSON.stringify({'message':'Product Title is Undefined'}))
-            }
+        }let matchedProducts = products.filter((product) => {
+            return product.title == Query.title;
+        });
+
+        if (matchedProducts.length > 0) {
+            res.end(JSON.stringify(matchedProducts));
+        } else {
+            res.end(JSON.stringify({ message: 'No products found with that title' }));
+        }
+    
         }else if (Query.id==undefined && Query.title==undefined && Query.brand!=undefined && Query.category==undefined){
-            let product = products.find((product)=>{
+            let matchedProducts = products.filter((product)=>{
                 return product.brand==Query.brand;
             })
-            if (product!==undefined){
-                res.end(JSON.stringify(product))
+            if (matchedProducts.length > 0){
+                res.end(JSON.stringify(matchedProducts))
             }else{
                 res.end(JSON.stringify({'message':'Product Brand is Undefined'}))
             }
         }else if (Query.id==undefined && Query.title==undefined && Query.brand==undefined && Query.category!=undefined){
-            let product = products.find((product)=>{
+            let matchedProducts = products.filter((product)=>{
                 return product.category==Query.category;
             })
-            if (product!==undefined){
-                res.end(JSON.stringify(product))
+            if (matchedProducts.length > 0){
+                res.end(JSON.stringify(matchedProducts))
             }else{
                 res.end(JSON.stringify({'message':'Product Category is Undefined'}))
+            }
+        }else if (Query.id==undefined && Query.title!=undefined && Query.brand!=undefined && Query.category==undefined){
+            let matchedProducts = products.filter((product)=>{
+                return product.title==Query.title && product.brand==Query.brand;
+            })
+            if (matchedProducts.length > 0){
+                res.end(JSON.stringify(matchedProducts))
+            }else{
+                let anyTitle = products.find(product=>{
+                    return product.title==Query.title;
+                })
+                let anyBrand = products.find(product=>{
+                    return product.brand==Query.brand;
+                })
+                if(anyTitle==undefined && anyBrand!=undefined){
+                    res.end(JSON.stringify({'message':'Product Title is mismatched or Undefined'}))
+                }else if(anyTitle!=undefined && anyBrand==undefined){
+                     res.end(JSON.stringify({'message':'Product Brand is mismatched or Undefined'}))
+                }else{
+                    res.end(JSON.stringify({'message':'Product Brand & Product Title are mismatched or Undefined'}))
+                }
+               
+            }
+        }else if (Query.id==undefined && Query.title!=undefined && Query.brand==undefined && Query.category!=undefined){
+            let matchedProducts = products.filter((product)=>{
+                return product.category==Query.category && product.title==Query.title;
+            })
+            if (matchedProducts.length > 0){
+                res.end(JSON.stringify(matchedProducts))
+            }else{
+                let anyCategory = products.find(product=>{
+                    return product.category==Query.category
+                });
+                let anyTitle = products.find(product=>{
+                    return product.title==Query.title
+                });
+                if(anyCategory==undefined && anyTitle!=undefined){
+                    res.end(JSON.stringify({'message':'Product Category is mismatched or Undefined'}))
+                }else if(anyCategory!=undefined && anyTitle==undefined){
+                    res.end(JSON.stringify({'message':'Product Title is mismatched or Undefined'}))
+                }else{
+                    res.end(JSON.stringify({'message':'Product Title and Product Category are mismatched or Undefined'}))
+                }
+                
+            }
+        }else if (Query.id==undefined && Query.title==undefined && Query.brand!=undefined && Query.category!=undefined){
+            let matchedProducts = products.filter((product)=>{
+                return product.category==Query.category && product.brand==Query.brand;
+            })
+            if (matchedProducts.length > 0){
+                res.end(JSON.stringify(matchedProducts))
+            }else{
+                res.end(JSON.stringify({'message':'Product Category or Brand Undefined'}))
+            }
+        }else if (Query.id==undefined && Query.title!=undefined && Query.brand!=undefined && Query.category!=undefined){
+            let matchedProducts = products.filter((product)=>{
+                return product.category==Query.category && product.brand==Query.brand && product.title==Query.title;
+            })
+            if (matchedProducts.length > 0){
+                res.end(JSON.stringify(matchedProducts))
+            }else{
+                res.end(JSON.stringify({'message':'Product Title or Brand or Category Undefined'}))
             }
         }else if(req.method=="POST",URL.pathname==='/products'){
             let product = '';
@@ -63,7 +126,7 @@ http.createServer((req,res)=>{
             req.on('end',()=>{
                 let newProduct=JSON.parse(product);
                 products.push(newProduct);
-                fs.writeFile('/products.json',JSON.stringify(products),(err)=>{
+                fs.writeFile('./products.json',JSON.stringify(products),(err)=>{
                     if(err){
                         res.end(JSON.stringify({"message":"Error saving product"}));
                     }else{
@@ -84,7 +147,7 @@ http.createServer((req,res)=>{
                 })
                 if(index!=-1){
                     products[index]=updatedProduct;
-                    fs.writeFile('products.json',JSON.stringify(products),(err)=>{
+                    fs.writeFile('./products.json',JSON.stringify(products),(err)=>{
                         if(err){
                             res.end(JSON.stringify({"message":"cannot Update Item"}));
                         }else{
@@ -104,9 +167,9 @@ http.createServer((req,res)=>{
 
             if (index!=-1){
                 let deletedProduct = products.splice(index,1);
-                fs.writeFile('products.json',JSON.stringify(products),(err)=>{
+                fs.writeFile('./products.json',JSON.stringify(products),(err)=>{
                         if(err){
-                            res.end(JSON.stringify({"message":"cannot Delete Item"}));
+                            res.end(JSON.stringify({"message":"Cannot Delete Item"}));
                         }else{
                             console.log(deletedProduct);
                             res.end(JSON.stringify({"message":"Item successfully Deleted"}));

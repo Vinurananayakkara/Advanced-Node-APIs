@@ -1,0 +1,17 @@
+Get-{find -id
+filter-title,brand,category
+filter-title&brand,title&category,brand&category
+filter-title,brand,category} 
+
+Post-{
+    products.push(newProduct)
+}
+
+Put-{
+    products.findIndex(product)
+    products[index]=updatedProduct
+}
+
+Delete-{
+    products.splice(index,1)
+}
