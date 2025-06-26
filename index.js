@@ -118,7 +118,7 @@ http.createServer((req,res)=>{
             }else{
                 res.end(JSON.stringify({'message':'Product Title or Brand or Category Undefined'}))
             }
-        }else if(req.method=="POST",URL.pathname==='/products'){
+        }else if(req.method=="POST"&& URL.pathname==='/products'){
             let product = '';
             req.on('data',(chunck)=>{
                 product+=chunck;
@@ -160,7 +160,7 @@ http.createServer((req,res)=>{
                 }
                 
             })
-        }else if(req.method=="DELETE",URL.pathname==='/products'){
+        }else if(req.method=="DELETE" && URL.pathname==='/products'){
             let index=products.findIndex((product)=>{
                 return Query.id==product.id;
             })
@@ -180,7 +180,7 @@ http.createServer((req,res)=>{
             }
             
         }
-    } 
+    
         
     //
         
